@@ -1,6 +1,6 @@
 # LinaXSearch
-<img src="linaxsearch-on-laptop.png" alt="Tampilan di laptop" width="80%" style="display : inline-block;">
-<img src="linaxsearch-on-android.png" alt="Tampilan di android" width ="20%" style="display : inline-block;"><br>
+<img src="linaxsearch-on-laptop.png" alt="Tampilan di laptop" width="100%">
+<img src="linaxsearch-on-android.png" alt="Tampilan di android" width ="25%" style="display : inline-block;"><br>
 LinaXSearch merupakan aplikasi search engine yang di buat menggunakan bahasa pemrograman php7 dan mysqli.<br>
 Dalam kasus ini, aplikasinya digunakan sebagai tempat sharing tema blogger dan wordpress. ( Demo : https://temaku.nasihosting.com )<br>
 [!] <b style="display : inline-block;">*Jangan hapus footer</b> ( kecuali sudah melakukan donasi )
