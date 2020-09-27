@@ -69,7 +69,7 @@ if (!isset($_SESSION['adm1n'])) {
 // Login Process dan session admin
 if (isset($_GET["l0g1n"])){
   // cara login admin = tambahkan ?l0g1n=password di akhir url
-    if ($_POST["password"]=="password"){ // silahkan ganti password
+    if ($_GET["password"]=="password"){ // silahkan ganti password
         session_start();
         $_SESSION['adm1n'] = 'Lutfianam'; // Ganti dengan nama kamu
         header("Location: index.php");    
