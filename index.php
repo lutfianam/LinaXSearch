@@ -47,16 +47,9 @@ $base_url = "http://localhost/project/opensource/LinaXSearch"; // Ganti dengan u
 // hide error
 // Turn off error reporting
 error_reporting(0);
-// Report runtime errors
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
-// Report all errors
-error_reporting(E_ALL);
-// Same as error_reporting(E_ALL);
-ini_set("error_reporting", E_ALL);
-// Report all errors except E_NOTICE
-error_reporting(E_ALL & ~E_NOTICE);
-// end hide all error
 
+// menambahkan flag HttpOnly pada Session Cookie untuk mencegah Cookie dapat diakses dari javascript
+ini_set('session.cookie_httponly', true);
 // session admin dan pengunjung
 session_start();
 // session pengunjung
@@ -70,9 +63,9 @@ if (!isset($_SESSION['adm1n'])) {
 if (isset($_GET["l0g1n"])){
   // cara login admin = tambahkan ?l0g1n=password di akhir url
     if ($_GET["password"]=="password"){ // silahkan ganti password
-        session_start();
         $_SESSION['adm1n'] = 'Lutfianam'; // Ganti dengan nama kamu
-        header("Location: index.php");    
+        header("Location: index.php");
+        exit;    
     }else{
         echo "Maaf Username Atau Password Salah !";
     }
@@ -127,21 +120,17 @@ function RandomKode($panjang)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && $_SESSION['token'] == $_POST['token']) {
   // Semua permintaan
   $kodeweb = RandomKode(6);
-  $title = addslashes(htmlspecialchars($_POST['title']));
-  $url_download = addslashes(htmlspecialchars($_POST['link-download']));
-  $url_demo = addslashes(htmlspecialchars($_POST['link-demo']));
-  $kategori = addslashes(htmlspecialchars($_POST['category']));
-  $deskripsi = addslashes(htmlspecialchars($_POST['deskripsi']));
-  $tag = addslashes(htmlspecialchars($_POST['tag']));
-  $ip_u = addslashes(htmlspecialchars($_SERVER['REMOTE_ADDR']));
+  $title = htmlspecialchars($_POST['title'], ENT_QUOTES);
+  $url_download = htmlspecialchars($_POST['link-download'], ENT_QUOTES);
+  $url_demo = htmlspecialchars($_POST['link-demo'], ENT_QUOTES);
+  $kategori = htmlspecialchars($_POST['category'], ENT_QUOTES);
+  $deskripsi = htmlspecialchars($_POST['deskripsi'], ENT_QUOTES);
+  $tag = htmlspecialchars($_POST['tag'], ENT_QUOTES);
+  $ip_u = $_SERVER['REMOTE_ADDR'];
   // Menginsert data
   if (isset($_POST['accept']) == 'on') {
     if (empty($title)) {
       echo '<script type="text/javascript">window.location = "?tambah-tema&pesan=judultidakbolehkosong"</script>';
-      exit();
-    }
-    if(preg_match("/(<|>)/i", $_GET['title'])) {
-      echo '<script type="text/javascript">window.location = "?error=attacker&pesan=bandel"</script>';
       exit();
     }
     if (!empty($_POST['link-demo'])) {
@@ -193,11 +182,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $_SESSION['token'] == $_POST['token'
 // Menampilkan hasil query pencarian
 $halaman = 12;
 $page = isset($_GET['halaman'])? (int)$_GET["halaman"]:1;
-$page = addslashes(htmlspecialchars($page));
 $mulai = ($page>1) ? ($page * $halaman) - $halaman : 0;
-$mulai = addslashes(htmlspecialchars($mulai));
 if(isset($_GET['query'])){
-  $cari = addslashes(htmlspecialchars($_GET['query']));
+  $cari = addslashes($_GET['query']);
   if (!empty($cari)) {
     $sql = mysqli_query($db_kon,"select * from lxl_link_download where title like '%".$cari."%' OR deskripsi like '%".$cari."%' OR tag like '%".$cari."%' LIMIT $mulai, $halaman");
   } else {
@@ -251,25 +238,25 @@ if (isset($_GET['sitemap'])) {
   <title> 
 <?php
 if (isset($_GET['query'])) {
-    $key = addslashes(htmlspecialchars($_GET['query']));
+    $key = htmlspecialchars($_GET['query'], ENT_QUOTES);
     echo substr(stripslashes($key), 0, '36')." . . . |";
   } elseif (isset($_GET['detail'])) {
-    $code = addslashes(htmlspecialchars($_GET['detail']));
+    $code = addslashes($_GET['detail']);
     $qdetail = mysqli_query($db_kon, "SELECT * FROM lxl_link_download WHERE kode_url='$code'");
     $fdetail = mysqli_fetch_array($qdetail);
     $jt_pengunjung = $fdetail['pengunjung']+'1';
     $q_jtpengunjung = mysqli_query($db_kon,"UPDATE lxl_link_download SET pengunjung='$jt_pengunjung' WHERE kode_url='$code'");
-    echo stripslashes(htmlspecialchars($fdetail['title']))." |";
+    echo htmlspecialchars($fdetail['title'])." |";
   } elseif (isset($_GET['redirect']) && $_SESSION['token'] == $_GET['token']) {
-    $code = addslashes(htmlspecialchars($_GET['redirect']));
+    $code = addslashes($_GET['redirect']);
     $qdetail = mysqli_query($db_kon, "SELECT * FROM lxl_link_download WHERE kode_url='$code'");
     $fdetail = mysqli_fetch_array($qdetail);
       if ($_GET['type'] == 'demo') {
-        echo "Demo ".addslashes(htmlspecialchars($fdetail['title']))." |";
+        echo "Demo ".htmlspecialchars($fdetail['title'])." |";
       } elseif ($_GET['type'] == 'download') {
         $jt_download = $fdetail['download']+'1';
         $q_jtdownloas = mysqli_query($db_kon,"UPDATE lxl_link_download SET download='$jt_download' WHERE kode_url='$code'");
-        echo "Download ".addslashes(htmlspecialchars($fdetail['title']))." |";
+        echo "Download ".htmlspecialchars($fdetail['title'])." |";
       }
 }
 ?> <?= $app_nama; ?> - Tools Search Engine </title>
@@ -306,21 +293,17 @@ if (isset($_GET['query'])) {
   </nav>
 <?php
 if(isset($_GET['query']) OR isset($_GET['detail']) OR isset($_GET['redirect']) OR isset($_GET['error']) OR isset($_GET['tambah-tema'])){
-    $detail = addslashes(htmlspecialchars($_GET['detail']));
-    $error = addslashes(htmlspecialchars($_GET['error']));
-    $redirect = addslashes(htmlspecialchars($_GET['redirect']));
-    $sitemap = addslashes(htmlspecialchars($_GET['sitemap']));
-    $query = addslashes(htmlspecialchars($_GET['query']));
+    $detail = addslashes($_GET['detail']);
+    $error = addslashes($_GET['error']);
+    $redirect = addslashes($_GET['redirect']);
+    $sitemap = addslashes($_GET['sitemap']);
+    $query = addslashes($_GET['query']);
 
     if (isset($_GET['query'])) {
       // pembersihan keyword
       $pencarian = substr($query, 0, '36');
       // end of pembersihan keyword
       // log pencarian
-      if(preg_match("/(<|'|>)/i", $_GET['query'])) {
-        echo '<script type="text/javascript">window.location = "?error=attacker&pesan=bandel"</script>';
-        exit();
-      }
       $log_pencarian = mysqli_query($db_kon, "SELECT * FROM `lxl_keyword` WHERE keyword='$pencarian' LIMIT 1");
       $log = mysqli_fetch_array($log_pencarian);
       $validator_log  = mysqli_num_rows($log_pencarian);
@@ -340,7 +323,7 @@ if(isset($_GET['query']) OR isset($_GET['detail']) OR isset($_GET['redirect']) O
   <blockquote class="wrapper">
     <h2 class="header center red-text">Belum ada tema</h2>
     <p class="center">
-      Mohon maaf belum ada tema yang ditemukan dengan kata kunci "<?= stripslashes($pencarian); ?>".
+      Mohon maaf belum ada tema yang ditemukan dengan kata kunci "<?= htmlspecialchars($pencarian); ?>".
     </p>
   </blockquote>
 </div>
@@ -348,7 +331,7 @@ if(isset($_GET['query']) OR isset($_GET['detail']) OR isset($_GET['redirect']) O
     } else {
     // echo $total;
     ?>
-    <h3 class="header center green-text">"<?= stripslashes($pencarian); ?>"</h3>
+    <h3 class="header center green-text">"<?= htmlspecialchars($pencarian); ?>"</h3>
     <div class="col s12 m12">
       <div class="container">
       <div class="card">
@@ -389,8 +372,8 @@ if ($link['kategori'] == '1') {
 }
 ?>  
                   </td>
-                  <td><?= stripslashes(htmlspecialchars(substr($link['title'], '0', '26'))); ?>...</td>
-                  <td><?= stripslashes(htmlspecialchars(substr($link['deskripsi'], '0', '32'))); ?>...</td>
+                  <td><?= htmlspecialchars(substr($link['title'], '0', '26'), ENT_QUOTES); ?>...</td>
+                  <td><?= htmlspecialchars(substr($link['deskripsi'], '0', '32'), ENT_QUOTES); ?>...</td>
                   <td>
 <?php
   if ($link['author'] == 1) {
@@ -400,7 +383,7 @@ if ($link['kategori'] == '1') {
   }
 ?>
                   </td>
-                  <td><a href="?detail=<?= addslashes(htmlspecialchars($link['kode_url'])); ?>" class="green-text"><i class="material-icons prefix">file_download</i></a></td>
+                  <td><a href="?detail=<?= htmlspecialchars($link['kode_url'], ENT_QUOTES); ?>" class="green-text"><i class="material-icons prefix">file_download</i></a></td>
                   <?php $no++; ?>
                 </tr>
 <?php
@@ -416,7 +399,7 @@ if ($link['kategori'] == '1') {
 // pagination
 for ($i=1; $i<=$pages ; $i++){
 ?>
-            <li class="waves-effect"><a href="?query=<?= stripslashes(htmlspecialchars($pencarian)); ?>&halaman=<?= $i; ?>"><?= $i; ?></a></li>
+            <li class="waves-effect"><a href="?query=<?= htmlspecialchars($pencarian, ENT_QUOTES); ?>&halaman=<?= $i; ?>"><?= $i; ?></a></li>
 <?php 
 }
 // end of pagination
@@ -526,10 +509,9 @@ for ($i=1; $i<=$pages ; $i++){
     }
 
     if (isset($_GET['detail'])) {
-      $code = addslashes(htmlspecialchars($_GET['detail']));
+      $code = addslashes($_GET['detail']);
       $qdetail = mysqli_query($db_kon, "SELECT * FROM lxl_link_download WHERE kode_url='$code'");
-      $fdetail = mysqli_fetch_array($qdetail);
-      $detail = $fdetail;
+      $detail = mysqli_fetch_array($qdetail);
       $validetail  = mysqli_num_rows($qdetail);
       // echo $validetail;
         if ($validetail == "0") {
@@ -538,7 +520,7 @@ for ($i=1; $i<=$pages ; $i++){
 ?>
 <div class="container">
   <blockquote class="green-text">
-    <h3 class="header green-text"><?= stripslashes(htmlspecialchars($detail['title'])); ?></h3>
+    <h3 class="header green-text"><?= htmlspecialchars($detail['title']); ?></h3>
     <p>Dilihat <?= $detail['pengunjung']; ?> Kali | Diunduh <?= $detail['download']; ?> Kali | Diupload Pada <?= $detail['date']; ?> Oleh
 <?php
   if ($detail['author'] == 1) {
@@ -560,15 +542,15 @@ for ($i=1; $i<=$pages ; $i++){
 <?php
   } else {
 ?>
-        <a class="btn btn-block waves-effect waves-light blue" href="?redirect=<?= stripslashes(htmlspecialchars($detail['kode_url'])); ?>&type=demo&token=<?= $token; ?>" target="_blank"><i class="material-icons right">important_devices</i>Demo</a>
+        <a class="btn btn-block waves-effect waves-light blue" href="?redirect=<?= htmlspecialchars($detail['kode_url']); ?>&type=demo&token=<?= $token; ?>" target="_blank"><i class="material-icons right">important_devices</i>Demo</a>
 <?php
   }
 ?>
       </div>
       <div class="col s6">
-        <a class="btn btn-block waves-effect waves-light green" href="?redirect=<?= stripslashes(htmlspecialchars($detail['kode_url'])); ?>&type=download&token=<?= $token; ?>" target="_blank"><i class="material-icons right">file_download</i>Unduh</a>
+        <a class="btn btn-block waves-effect waves-light green" href="?redirect=<?= htmlspecialchars($detail['kode_url'], ENT_QUOTES); ?>&type=download&token=<?= $token; ?>" target="_blank"><i class="material-icons right">file_download</i>Unduh</a>
       </div>
-      <div class="col s12"><br><?= stripslashes(htmlspecialchars($detail['deskripsi'])); ?></div>
+      <div class="col s12"><br><?= htmlspecialchars($detail['deskripsi']); ?></div>
     </div>
     <div class="col s12 m6">
       <ul class="collection with-header">
@@ -576,7 +558,7 @@ for ($i=1; $i<=$pages ; $i++){
 <?php
 $tag = explode(',', $detail['tag']);
 for($x=0;$x<count($tag);$x++){
-  echo '<li class="collection-item">'.stripslashes(htmlspecialchars($tag[$x])).'</li>';
+  echo '<li class="collection-item">'.htmlspecialchars($tag[$x]).'</li>';
 }
 ?>
       </ul>
@@ -593,10 +575,10 @@ for($x=0;$x<count($tag);$x++){
       if (isset($_GET['token']) == $_SESSION['token']) {
         switch ($type) {
           case 'demo':
-            die('<script type="text/javascript">window.location = "'.stripslashes(htmlspecialchars($sql_redirect['url_demo'])).'"</script>');
+            die('<script type="text/javascript">window.location = "'.htmlspecialchars($sql_redirect['url_demo'], ENT_QUOTES).'"</script>');
             break;
           case 'download':
-            die('<script type="text/javascript">window.location = "'.stripslashes(htmlspecialchars($sql_redirect['url_download'])).'"</script>');
+            die('<script type="text/javascript">window.location = "'.htmlspecialchars($sql_redirect['url_download'], ENT_QUOTES).'"</script>');
             break;    
           default:
             die('<script type="text/javascript">window.location = "?error=tidakadadata"</script>');
@@ -686,7 +668,7 @@ for($x=0;$x<count($tag);$x++){
   $hot_pencarian = mysqli_query($db_kon,"select keyword from lxl_keyword order by jumlah desc LIMIT 7");
   while ($hot = mysqli_fetch_array($hot_pencarian)) {
     // var_dump($hot);
-    echo '<a href="?query='.stripslashes(htmlspecialchars($hot['keyword'])).'" class="chip">'.stripslashes(htmlspecialchars(ucwords($hot['keyword']))).'</a>';
+    echo '<a href="?query='.htmlspecialchars($hot['keyword'], ENT_QUOTES).'" class="chip">'.htmlspecialchars(ucwords($hot['keyword']), ENT_QUOTES).'</a>';
   }
 ?>
             </div>
